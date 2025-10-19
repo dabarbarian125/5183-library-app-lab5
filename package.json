@@ -6,8 +6,10 @@
   "engines": { "node": "22.x" },
   "scripts": {
     "start": "node api/server.js",
-    "dev": "node --watch api/server.js",
-    "test": "echo \"(smoke tests land in M3)\" && exit 0"
+    "dev:api": "node --watch api/server.js",
+    "dev:web": "npm run dev --prefix web",
+    "test": "echo \"(smoke tests land in M3)\" && exit 0",
+    "smoke": "./scripts/smoke.sh"
   },
   "keywords": [],
   "author": "",
