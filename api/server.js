@@ -1,6 +1,7 @@
 // api/server.js
 const express = require('express');
 const app = express();
+const os = require('os');
 const { books } = require('./data.cjs');
 const { newId, validateBookPayload } = require('./util.cjs');
 
@@ -8,7 +9,9 @@ const { newId, validateBookPayload } = require('./util.cjs');
 app.use(express.json());
 
 // fast, dependency-free health for probes
-app.get('/api/health', (_req, res) => res.status(200).json({ status: 'ok' }));
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', host: os.hostname() });
+});
 
 // read-only list for Lab 5 validation
 app.get('/api/books', (_req, res) => {
@@ -68,3 +71,7 @@ const server = app.listen(process.env.PORT || 3000, () =>
 process.on('SIGTERM', () => {
   server.close(() => process.exit(0));
 });
+
+
+// allow tests to import and close the server
+module.exports = { app, server };
