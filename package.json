@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node api/server.js",
     "dev:api": "node --watch api/server.js",
-    "dev:web": "npm run dev --prefix web",
     "test": "node --test test/*.test.cjs",
     "smoke": "./scripts/smoke.sh"
   },
