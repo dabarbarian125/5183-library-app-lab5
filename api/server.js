@@ -61,6 +61,16 @@ app.delete('/api/books/:id', (req, res) => {
   const [removed] = books.splice(idx, 1);
   return res.status(200).json(removed);
 });
+const path = require('path');
+
+// --- Serve Vite build output in production ---
+const distDir = path.join(__dirname, 'dist');
+app.use(express.static(distDir));
+
+// SPA fallback: send index.html for non-API routes
+app.get(/^\/(?!api).*/, (req, res) => {
+  res.sendFile(path.join(distDir, 'index.html'));
+});
 
 // start server (default 3000 locally; Lab 5 will use :80 via systemd)
 const server = app.listen(process.env.PORT || 3000, () =>
