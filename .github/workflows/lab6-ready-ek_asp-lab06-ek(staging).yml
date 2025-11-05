@@ -44,12 +44,21 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+         - name: Build React app (Vite)
+     run: |
+       npm --prefix web ci
+       npm --prefix web run build
+
+   - name: List Vite build output
+     run: ls -la web/dist
+
       - name: 'Deploy to Azure Web App'
+      
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'asp-lab06-ek'
           slot-name: 'staging'
           package: .
+
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_FEBB7523751240A8BDCD1B97EA9CAA8B }}
