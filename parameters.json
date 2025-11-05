@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_asp_lab06_ek_name": {
+            "value": null
+        },
+        "serverfarms_asp_lab06_ek_name": {
+            "value": null
+        },
+        "components_asp_lab06_ek_name": {
+            "value": null
+        },
+        "autoscalesettings_asp_lab06_ek_Autoscale_753_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_c00d1569_d1b3_44b9_8f26_fc9ea3d0e9f7_CUS_externalid": {
+            "value": null
+        }
+    }
+}
