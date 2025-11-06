@@ -45,12 +45,14 @@ jobs:
         with:
           name: node-app
           
-- name: Build React app (Vite)
- run: |
- npm --prefix web ci
- npm --prefix web run build
- # (Optional) verify dist created- name: List Vite build output
- run: ls -la web/dist
+      - name: Build React app (Vite)
+        run: |
+         npm --prefix web ci
+         npm --prefix web run build
+
+      - name: List Vite build output
+        run: ls -la web/dist
+
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -61,3 +63,4 @@ jobs:
           package: .
 
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4D637E2A3F69459494EA98C942F94DA8 }}
+
