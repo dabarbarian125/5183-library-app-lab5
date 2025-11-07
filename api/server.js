@@ -1,10 +1,10 @@
 // api/server.js
+const path = require('path');
 const express = require('express');
 const app = express();
 const os = require('os');
 const { books } = require('./data.cjs');
 const { newId, validateBookPayload } = require('./util.cjs');
-
 // parse JSON bodies
 app.use(express.json());
 
@@ -61,6 +61,16 @@ app.delete('/api/books/:id', (req, res) => {
   const [removed] = books.splice(idx, 1);
   return res.status(200).json(removed);
 });
+
+// --------------------------------------------------
+// Serve the built React front end (Vite output)
+// --------------------------------------------------
+const distDir = path.join(__dirname, '..', 'web', 'dist');
+app.use(express.static(distDir));
+app.get(/^\/(?!api).*/, (_, res) => {
+  res.sendFile(path.join(distDir, 'index.html'));
+});
+// --------------------------------------------------
 
 // start server (default 3000 locally; Lab 5 will use :80 via systemd)
 const server = app.listen(process.env.PORT || 3000, () =>
