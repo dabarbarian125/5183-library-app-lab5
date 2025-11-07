@@ -35,6 +35,15 @@ jobs:
           name: node-app
           path: .
 
+      - name: Build React app (Vite)
+	run: |
+ 	npm --prefix web ci
+ 	npm --prefix web run build
+
+      # (Optional) verify dist created
+      - name: List Vite build output
+ 	run: ls -la web/dist
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
