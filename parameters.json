@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sites_app_lab06_osteff_name": {
+            "value": null
+        },
+        "serverfarms_asp_lab06_osteff_name": {
+            "value": null
+        },
+        "components_app_lab06_osteff_name": {
+            "value": null
+        },
+        "actionGroups_Application_Insights_Smart_Detection_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_86661d94_7eb1_4d26_9391_fb452828539c_EUS2_externalid": {
+            "value": null
+        }
+    }
+}
