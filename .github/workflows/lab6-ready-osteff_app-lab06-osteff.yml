@@ -64,3 +64,4 @@ jobs:
 
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_4D637E2A3F69459494EA98C942F94DA8 }}
 
+
