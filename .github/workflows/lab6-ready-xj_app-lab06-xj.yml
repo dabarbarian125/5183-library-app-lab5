@@ -61,5 +61,6 @@ jobs:
         with:
           app-name: 'app-lab06-xj'
           slot-name: 'Production'
-          package: .
+          package: ./api
+
           
