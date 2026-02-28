@@ -1,0 +1,1039 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "loadBalancers_lb_lab05_sm_name": {
+            "defaultValue": "lb-lab05-sm",
+            "type": "String"
+        },
+        "publicIPAddresses_appgw_ip_name": {
+            "defaultValue": "appgw-ip",
+            "type": "String"
+        },
+        "virtualMachines_vm1_lab05_sm_name": {
+            "defaultValue": "vm1-lab05-sm",
+            "type": "String"
+        },
+        "virtualMachines_vm2_lab05_sm_name": {
+            "defaultValue": "vm2-lab05-sm",
+            "type": "String"
+        },
+        "applicationGateways_appgw_sm_name": {
+            "defaultValue": "appgw-sm",
+            "type": "String"
+        },
+        "bastionHosts_bastion_lab05_sm_name": {
+            "defaultValue": "bastion-lab05-sm",
+            "type": "String"
+        },
+        "virtualNetworks_vnet_lab05_sm_name": {
+            "defaultValue": "vnet-lab05-sm",
+            "type": "String"
+        },
+        "publicIPAddresses_public_ip_sm_name": {
+            "defaultValue": "public-ip-sm",
+            "type": "String"
+        },
+        "networkInterfaces_nic1_lab05_sm_name": {
+            "defaultValue": "nic1-lab05-sm",
+            "type": "String"
+        },
+        "networkInterfaces_nic2_lab05_sm_name": {
+            "defaultValue": "nic2-lab05-sm",
+            "type": "String"
+        },
+        "networkSecurityGroups_nsg_lab05_sm_name": {
+            "defaultValue": "nsg-lab05-sm",
+            "type": "String"
+        },
+        "publicIPAddresses_vnet_lab05_sm_IPv4_name": {
+            "defaultValue": "vnet-lab05-sm-IPv4",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('networkSecurityGroups_nsg_lab05_sm_name')]",
+            "location": "westus3",
+            "properties": {
+                "securityRules": [
+                    {
+                        "name": "allow-ssh-from-vnet",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_nsg_lab05_sm_name'), 'allow-ssh-from-vnet')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "22",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 100,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-http-from-vnet",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_nsg_lab05_sm_name'), 'allow-http-from-vnet')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "VirtualNetwork",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 110,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-probes-from-azureloadbalancer",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_nsg_lab05_sm_name'), 'allow-probes-from-azureloadbalancer')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "*",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "AzureLoadBalancer",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 120,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    },
+                    {
+                        "name": "allow-http-from-internet",
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups/securityRules', parameters('networkSecurityGroups_nsg_lab05_sm_name'), 'allow-http-from-internet')]",
+                        "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                        "properties": {
+                            "protocol": "TCP",
+                            "sourcePortRange": "*",
+                            "destinationPortRange": "80",
+                            "sourceAddressPrefix": "Internet",
+                            "destinationAddressPrefix": "*",
+                            "access": "Allow",
+                            "priority": 105,
+                            "direction": "Inbound",
+                            "sourcePortRanges": [],
+                            "destinationPortRanges": [],
+                            "sourceAddressPrefixes": [],
+                            "destinationAddressPrefixes": []
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('publicIPAddresses_appgw_ip_name')]",
+            "location": "westus3",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "properties": {
+                "ipAddress": "4.249.106.206",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('publicIPAddresses_public_ip_sm_name')]",
+            "location": "westus3",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "3",
+                "2"
+            ],
+            "properties": {
+                "ipAddress": "4.249.103.131",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": [],
+                "ddosSettings": {
+                    "protectionMode": "VirtualNetworkInherited"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('publicIPAddresses_vnet_lab05_sm_IPv4_name')]",
+            "location": "westus3",
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "zones": [
+                "1",
+                "3",
+                "2"
+            ],
+            "properties": {
+                "ipAddress": "20.171.160.248",
+                "publicIPAddressVersion": "IPv4",
+                "publicIPAllocationMethod": "Static",
+                "idleTimeoutInMinutes": 4,
+                "ipTags": []
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-11-01",
+            "name": "[parameters('virtualMachines_vm1_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic1_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('virtualMachines_vm1_lab05_sm_name'), '_disk1_a65a308e1a334713b29712fdda1c3f79')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS",
+                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_vm1_lab05_sm_name'), '_disk1_a65a308e1a334713b29712fdda1c3f79'))]"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_vm1_lab05_sm_name')]",
+                    "adminUsername": "student",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false,
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault",
+                            "assessmentMode": "ImageDefault"
+                        }
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic1_lab05_sm_name'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2024-11-01",
+            "name": "[parameters('virtualMachines_vm2_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic2_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_B1s"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "Canonical",
+                        "offer": "0001-com-ubuntu-server-jammy",
+                        "sku": "22_04-lts",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Linux",
+                        "name": "[concat(parameters('virtualMachines_vm2_lab05_sm_name'), '_OsDisk_1_04e1e9c8e8c84c15ba861ee0a442f8eb')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                            "storageAccountType": "Premium_LRS",
+                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_vm2_lab05_sm_name'), '_OsDisk_1_04e1e9c8e8c84c15ba861ee0a442f8eb'))]"
+                        },
+                        "deleteOption": "Detach",
+                        "diskSizeGB": 30
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_vm2_lab05_sm_name')]",
+                    "adminUsername": "student",
+                    "linuxConfiguration": {
+                        "disablePasswordAuthentication": false,
+                        "provisionVMAgent": true,
+                        "patchSettings": {
+                            "patchMode": "ImageDefault",
+                            "assessmentMode": "ImageDefault"
+                        }
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                    "requireGuestProvisionSignal": true
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic2_lab05_sm_name'))]"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('loadBalancers_lb_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_public_ip_sm_name'))]"
+            ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Regional"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "frontend-ip-configuration-sm",
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_lb_lab05_sm_name')), '/frontendIPConfigurations/frontend-ip-configuration-sm')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_public_ip_sm_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "backend-pool-sm",
+                        "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]",
+                        "properties": {
+                            "loadBalancerBackendAddresses": [
+                                {
+                                    "name": "rg-lab05-sm_nic1-lab05-smipconfig1",
+                                    "properties": {}
+                                },
+                                {
+                                    "name": "rg-lab05-sm_nic2-lab05-smipconfig1",
+                                    "properties": {}
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "lb-rule-sm",
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_lb_lab05_sm_name')), '/loadBalancingRules/lb-rule-sm')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_lb_lab05_sm_name')), '/frontendIPConfigurations/frontend-ip-configuration-sm')]"
+                            },
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "enableTcpReset": false,
+                            "loadDistribution": "Default",
+                            "disableOutboundSnat": true,
+                            "enableConnectionTracking": false,
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]"
+                            },
+                            "backendAddressPools": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]"
+                                }
+                            ],
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_lb_lab05_sm_name')), '/probes/health-probe-sm')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "health-probe-sm",
+                        "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_lb_lab05_sm_name')), '/probes/health-probe-sm')]",
+                        "properties": {
+                            "protocol": "Http",
+                            "port": 80,
+                            "requestPath": "/api/health",
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 1,
+                            "probeThreshold": 1,
+                            "noHealthyBackendsBehavior": "AllProbedDown"
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundRules": [],
+                "inboundNatPools": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/loadBalancers/backendAddressPools",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('loadBalancers_lb_lab05_sm_name'), '/backend-pool-sm')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_lb_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "loadBalancerBackendAddresses": [
+                    {
+                        "name": "rg-lab05-sm_nic1-lab05-smipconfig1",
+                        "properties": {}
+                    },
+                    {
+                        "name": "rg-lab05-sm_nic2-lab05-smipconfig1",
+                        "properties": {}
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('networkSecurityGroups_nsg_lab05_sm_name'), '/allow-http-from-internet')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "protocol": "TCP",
+                "sourcePortRange": "*",
+                "destinationPortRange": "80",
+                "sourceAddressPrefix": "Internet",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 105,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('networkSecurityGroups_nsg_lab05_sm_name'), '/allow-http-from-vnet')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "80",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 110,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('networkSecurityGroups_nsg_lab05_sm_name'), '/allow-probes-from-azureloadbalancer')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "protocol": "*",
+                "sourcePortRange": "*",
+                "destinationPortRange": "80",
+                "sourceAddressPrefix": "AzureLoadBalancer",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 120,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('networkSecurityGroups_nsg_lab05_sm_name'), '/allow-ssh-from-vnet')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "protocol": "Tcp",
+                "sourcePortRange": "*",
+                "destinationPortRange": "22",
+                "sourceAddressPrefix": "VirtualNetwork",
+                "destinationAddressPrefix": "*",
+                "access": "Allow",
+                "priority": 100,
+                "direction": "Inbound",
+                "sourcePortRanges": [],
+                "destinationPortRanges": [],
+                "sourceAddressPrefixes": [],
+                "destinationAddressPrefixes": []
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('virtualNetworks_vnet_lab05_sm_name'), '/AzureBastionSubnet')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.50.255.0/26",
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/applicationGateways",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('applicationGateways_appgw_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-appgw')]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_appgw_ip_name'))]"
+            ],
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "properties": {
+                "sku": {
+                    "name": "Standard_v2",
+                    "tier": "Standard_v2",
+                    "family": "Generation_1"
+                },
+                "gatewayIPConfigurations": [
+                    {
+                        "name": "appGatewayIpConfig",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/gatewayIPConfigurations/appGatewayIpConfig')]",
+                        "properties": {
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-appgw')]"
+                            }
+                        }
+                    }
+                ],
+                "sslCertificates": [],
+                "trustedRootCertificates": [],
+                "trustedClientCertificates": [],
+                "sslProfiles": [],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "appGwPublicFrontendIpIPv4",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/frontendIPConfigurations/appGwPublicFrontendIpIPv4')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_appgw_ip_name'))]"
+                            }
+                        }
+                    }
+                ],
+                "frontendPorts": [
+                    {
+                        "name": "port_80",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/frontendPorts/port_80')]",
+                        "properties": {
+                            "port": 80
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "pool-images",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-images')]",
+                        "properties": {
+                            "backendAddresses": []
+                        }
+                    },
+                    {
+                        "name": "pool-videos",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-videos')]",
+                        "properties": {
+                            "backendAddresses": []
+                        }
+                    }
+                ],
+                "loadDistributionPolicies": [],
+                "backendHttpSettingsCollection": [
+                    {
+                        "name": "pool-images-settings",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendHttpSettingsCollection/pool-images-settings')]",
+                        "properties": {
+                            "port": 80,
+                            "protocol": "Http",
+                            "cookieBasedAffinity": "Disabled",
+                            "pickHostNameFromBackendAddress": false,
+                            "requestTimeout": 20,
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/probes/probe-health')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "pool-videos-settings",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendHttpSettingsCollection/pool-videos-settings')]",
+                        "properties": {
+                            "port": 80,
+                            "protocol": "Http",
+                            "cookieBasedAffinity": "Disabled",
+                            "pickHostNameFromBackendAddress": false,
+                            "requestTimeout": 20,
+                            "probe": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/probes/probe-health')]"
+                            }
+                        }
+                    }
+                ],
+                "backendSettingsCollection": [],
+                "httpListeners": [
+                    {
+                        "name": "listener-http",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/httpListeners/listener-http')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/frontendIPConfigurations/appGwPublicFrontendIpIPv4')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostNames": [],
+                            "requireServerNameIndication": false,
+                            "customErrorConfigurations": []
+                        }
+                    }
+                ],
+                "listeners": [],
+                "urlPathMaps": [
+                    {
+                        "name": "http-80",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/urlPathMaps/http-80')]",
+                        "properties": {
+                            "defaultBackendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-images')]"
+                            },
+                            "defaultBackendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendHttpSettingsCollection/pool-images-settings')]"
+                            },
+                            "pathRules": [
+                                {
+                                    "name": "pool-images",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/urlPathMaps/http-80/pathRules/pool-images')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/image/*"
+                                        ],
+                                        "backendAddressPool": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-images')]"
+                                        },
+                                        "backendHttpSettings": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendHttpSettingsCollection/pool-images-settings')]"
+                                        },
+                                        "rewriteRuleSet": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/rewriteRuleSets/rw-set-sm')]"
+                                        }
+                                    }
+                                },
+                                {
+                                    "name": "pool-videos",
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/urlPathMaps/http-80/pathRules/pool-videos')]",
+                                    "properties": {
+                                        "paths": [
+                                            "/video/*"
+                                        ],
+                                        "backendAddressPool": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-videos')]"
+                                        },
+                                        "backendHttpSettings": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendHttpSettingsCollection/pool-videos-settings')]"
+                                        },
+                                        "rewriteRuleSet": {
+                                            "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/rewriteRuleSets/rw-set-sm')]"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "requestRoutingRules": [
+                    {
+                        "name": "http-80",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/requestRoutingRules/http-80')]",
+                        "properties": {
+                            "ruleType": "PathBasedRouting",
+                            "priority": 1,
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/httpListeners/listener-http')]"
+                            },
+                            "urlPathMap": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/urlPathMaps/http-80')]"
+                            }
+                        }
+                    }
+                ],
+                "routingRules": [],
+                "probes": [
+                    {
+                        "name": "probe-health",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/probes/probe-health')]",
+                        "properties": {
+                            "protocol": "Http",
+                            "host": "127.0.0.1",
+                            "path": "/api/health",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": false,
+                            "minServers": 0,
+                            "match": {
+                                "statusCodes": [
+                                    "200-399"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "rewriteRuleSets": [
+                    {
+                        "name": "rw-set-sm",
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/rewriteRuleSets/rw-set-sm')]",
+                        "properties": {
+                            "rewriteRules": [
+                                {
+                                    "ruleSequence": 100,
+                                    "conditions": [],
+                                    "name": "rw-image",
+                                    "actionSet": {
+                                        "requestHeaderConfigurations": [],
+                                        "responseHeaderConfigurations": [],
+                                        "urlConfiguration": {
+                                            "modifiedPath": "/api/health",
+                                            "reroute": false
+                                        }
+                                    }
+                                },
+                                {
+                                    "ruleSequence": 100,
+                                    "conditions": [],
+                                    "name": "rw-video",
+                                    "actionSet": {
+                                        "requestHeaderConfigurations": [],
+                                        "responseHeaderConfigurations": [],
+                                        "urlConfiguration": {
+                                            "modifiedPath": "/api/health",
+                                            "reroute": false
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "redirectConfigurations": [],
+                "privateLinkConfigurations": [],
+                "enableHttp2": true,
+                "enableFIPS": false,
+                "autoscaleConfiguration": {
+                    "minCapacity": 0,
+                    "maxCapacity": 10
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('bastionHosts_bastion_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_vnet_lab05_sm_IPv4_name'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'AzureBastionSubnet')]"
+            ],
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "dnsName": "bst-f9c170ef-9fe2-448d-834a-5f3123d3cfee.bastion.azure.com",
+                "scaleUnits": 2,
+                "enableTunneling": false,
+                "enableIpConnect": false,
+                "disableCopyPaste": false,
+                "enableShareableLink": false,
+                "enableKerberos": false,
+                "enableSessionRecording": false,
+                "enablePrivateOnlyBastion": false,
+                "ipConfigurations": [
+                    {
+                        "name": "IpConf",
+                        "id": "[concat(resourceId('Microsoft.Network/bastionHosts', parameters('bastionHosts_bastion_lab05_sm_name')), '/bastionHostIpConfigurations/IpConf')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_vnet_lab05_sm_IPv4_name'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'AzureBastionSubnet')]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('virtualNetworks_vnet_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]",
+                "[resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name'))]"
+            ],
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "10.50.0.0/16"
+                    ]
+                },
+                "privateEndpointVNetPolicies": "Disabled",
+                "subnets": [
+                    {
+                        "name": "snet-app",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-app')]",
+                        "properties": {
+                            "addressPrefix": "10.50.10.0/24",
+                            "networkSecurityGroup": {
+                                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+                            },
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    },
+                    {
+                        "name": "AzureBastionSubnet",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'AzureBastionSubnet')]",
+                        "properties": {
+                            "addressPrefix": "10.50.255.0/26",
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    },
+                    {
+                        "name": "snet-appgw",
+                        "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-appgw')]",
+                        "properties": {
+                            "addressPrefix": "10.50.9.0/27",
+                            "applicationGatewayIPConfigurations": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/gatewayIPConfigurations/appGatewayIpConfig')]"
+                                }
+                            ],
+                            "delegations": [],
+                            "privateEndpointNetworkPolicies": "Disabled",
+                            "privateLinkServiceNetworkPolicies": "Enabled"
+                        },
+                        "type": "Microsoft.Network/virtualNetworks/subnets"
+                    }
+                ],
+                "virtualNetworkPeerings": [],
+                "enableDdosProtection": false
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('virtualNetworks_vnet_lab05_sm_name'), '/snet-app')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_lab05_sm_name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.50.10.0/24",
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_nsg_lab05_sm_name'))]"
+                },
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "apiVersion": "2024-07-01",
+            "name": "[concat(parameters('virtualNetworks_vnet_lab05_sm_name'), '/snet-appgw')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_vnet_lab05_sm_name'))]",
+                "[resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name'))]"
+            ],
+            "properties": {
+                "addressPrefix": "10.50.9.0/27",
+                "applicationGatewayIPConfigurations": [
+                    {
+                        "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/gatewayIPConfigurations/appGatewayIpConfig')]"
+                    }
+                ],
+                "delegations": [],
+                "privateEndpointNetworkPolicies": "Disabled",
+                "privateLinkServiceNetworkPolicies": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('networkInterfaces_nic1_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-app')]",
+                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]",
+                "[resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name'))]"
+            ],
+            "kind": "Regular",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic1_lab05_sm_name')), '/ipConfigurations/ipconfig1')]",
+                        "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
+                        "properties": {
+                            "privateIPAddress": "10.50.10.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-app')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4",
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]"
+                                }
+                            ],
+                            "applicationGatewayBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-images')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "disableTcpStateTracking": false,
+                "nicType": "Standard",
+                "auxiliaryMode": "None",
+                "auxiliarySku": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2024-07-01",
+            "name": "[parameters('networkInterfaces_nic2_lab05_sm_name')]",
+            "location": "westus3",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-app')]",
+                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]",
+                "[resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name'))]"
+            ],
+            "kind": "Regular",
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "id": "[concat(resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_nic2_lab05_sm_name')), '/ipConfigurations/ipconfig1')]",
+                        "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
+                        "properties": {
+                            "privateIPAddress": "10.50.10.5",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_vnet_lab05_sm_name'), 'snet-app')]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4",
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_lb_lab05_sm_name'), 'backend-pool-sm')]"
+                                }
+                            ],
+                            "applicationGatewayBackendAddressPools": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_appgw_sm_name')), '/backendAddressPools/pool-videos')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "disableTcpStateTracking": false,
+                "nicType": "Standard",
+                "auxiliaryMode": "None",
+                "auxiliarySku": "None"
+            }
+        }
+    ]
+}
